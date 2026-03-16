@@ -17,13 +17,34 @@ choice = st.sidebar.selectbox("Menu", menu)
 
 # HOME PAGE
 if choice == "Home":
-    st.header("About the Project")
+    st.header("🌍 Global Income Inequality Analytics Dashboard")
+
     st.write("""
-    This project analyzes global income inequality using
-    GDP and Gini Index data from the World Bank.
-    The dashboard helps visualize economic disparities
-    between countries and regions.
+    This project analyzes global income inequality using economic indicators such as **GDP** and **Gini Index**.
+    
+    The goal of this project is to understand how income and wealth are distributed across different countries 
+    and how economic growth relates to inequality levels.
     """)
+
+    st.subheader("Project Objectives")
+
+    st.write("""
+    • Analyze global income distribution across countries  
+    • Compare GDP and inequality indicators  
+    • Visualize economic trends over multiple years  
+    • Identify disparities between developed and developing regions  
+    """)
+
+    st.subheader("Tools Used")
+
+    st.write("""
+    • Python for data processing  
+    • Power BI for dashboard visualization  
+    • Streamlit for web application development  
+    • World Bank Open Data as the dataset source  
+    """)
+
+    st.success("Use the navigation menu on the left to explore the dashboard, download data, and provide feedback.")
 
 # DASHBOARD PAGE
 elif choice == "Dashboard":
@@ -37,7 +58,7 @@ elif choice == "Dashboard":
 elif choice == "Download Data":
     st.header("Download Dataset")
 
-    df = pd.read_csv("../data/cleaned_data.csv")
+    df = pd.read_csv("cleaned_data.csv")
     st.dataframe(df.head())
 
     csv = df.to_csv(index=False).encode('utf-8')
