@@ -1,50 +1,90 @@
-import os
 import streamlit as st
+import pandas as pd
+import sqlite3
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCREENSHOTS_DIR = os.path.join(BASE_DIR, "screenshots")
+# Database connection
+conn = sqlite3.connect("database.db", check_same_thread=False)
+c = conn.cursor()
 
-
-st.set_page_config(page_title="Global Income Inequality Dashboard", layout="wide")
+# Create tables
+c.execute("CREATE TABLE IF NOT EXISTS users(username TEXT, password TEXT)")
+c.execute("CREATE TABLE IF NOT EXISTS feedback(name TEXT, message TEXT)")
 
 st.title("🌍 Global Income Inequality Analytics Dashboard")
 
-st.markdown("""
-This project analyzes global income inequality using World Bank data
-such as **Gini Index** and **GDP per capita**.
-""")
+menu = ["Home","Dashboard","Download Data","Feedback","Login","Register"]
+choice = st.sidebar.selectbox("Menu", menu)
 
-st.subheader("📊 Dashboard Preview")
+# HOME PAGE
+if choice == "Home":
+    st.header("About the Project")
+    st.write("""
+    This project analyzes global income inequality using
+    GDP and Gini Index data from the World Bank.
+    The dashboard helps visualize economic disparities
+    between countries and regions.
+    """)
 
-st.image(
-    os.path.join(SCREENSHOTS_DIR, "page1_overview.png"),
-    caption="Global Income Inequality Overview",
-    use_container_width=True
-)
+# DASHBOARD PAGE
+elif choice == "Dashboard":
+    st.header("Dashboard Preview")
 
-st.image(
-    os.path.join(SCREENSHOTS_DIR, "page2_comparison.png"),
-    caption="Country-wise Comparison",
-    use_container_width=True
-)
+    st.image("screenshots/page1_overview.png")
+    st.image("screenshots/page2_comparison.png")
+    st.image("screenshots/page3_trends.png")
 
-st.image(
-    os.path.join(SCREENSHOTS_DIR, "page3_trends.png"),
-    caption="Income Inequality Trends Over Time",
-    use_container_width=True
-)
+# DOWNLOAD DATA
+elif choice == "Download Data":
+    st.header("Download Dataset")
 
-st.header("🔍 Key Insights")
-st.markdown("""
-- Income inequality differs significantly across countries  
-- Higher GDP does not always indicate lower inequality  
-- Developing countries tend to show higher Gini Index values  
-""")
+    df = pd.read_csv("../data/cleaned_data.csv")
+    st.dataframe(df.head())
 
-st.header("🛠 Tools Used")
-st.markdown("""
-- Power BI  
-- Python  
-- Streamlit  
-- World Bank Open Data  
-""")
+    csv = df.to_csv(index=False).encode('utf-8')
+
+    st.download_button(
+        label="Download Dataset",
+        data=csv,
+        file_name="income_data.csv",
+        mime="text/csv",
+    )
+
+# FEEDBACK
+elif choice == "Feedback":
+    st.header("Submit Feedback")
+
+    name = st.text_input("Your Name")
+    message = st.text_area("Your Feedback")
+
+    if st.button("Submit"):
+        c.execute("INSERT INTO feedback VALUES (?,?)",(name,message))
+        conn.commit()
+        st.success("Thank you for your feedback!")
+
+# LOGIN
+elif choice == "Login":
+    st.header("User Login")
+
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        c.execute("SELECT * FROM users WHERE username=? AND password=?",(username,password))
+        result = c.fetchone()
+
+        if result:
+            st.success("Login Successful")
+        else:
+            st.error("Invalid credentials")
+
+# REGISTER
+elif choice == "Register":
+    st.header("Create Account")
+
+    new_user = st.text_input("Username")
+    new_pass = st.text_input("Password", type="password")
+
+    if st.button("Register"):
+        c.execute("INSERT INTO users VALUES (?,?)",(new_user,new_pass))
+        conn.commit()
+        st.success("Account Created Successfully")
